@@ -6,31 +6,44 @@ public class DroneMovement : MonoBehaviour {
 	Rigidbody drone;
 
 	void Awake() {
-		drone = GetComponent<Rigidbody> ();
+		drone = GetComponent<Rigidbody>();
 	}
 
-	void FixedUpdate(){
-		MovementUpDown ();
-		MovementForward ();
-		Rotation ();
+	/*
+	 * CONTROLS
+	 */
 
-		drone.AddRelativeForce (Vector3.up * upForce);
+	void FixedUpdate(){
+		MovementUpDown();
+		MovementForward();
+		Rotation();
+		ClampingSpeedValues();
+
+		drone.AddRelativeForce(Vector3.up * upForce);
 		drone.rotation = Quaternion.Euler(
 			new Vector3(tiltAmount, currentYRotation, drone.rotation.z));
 	}
 
+	/*
+	 * MOVEMENT UP
+	 */
+
 	public float upForce;
 	void MovementUpDown() {
 		if (Input.GetKey (KeyCode.I)) {
-			upForce = 400;
+			upForce = 1000;
 		} else if (Input.GetKey (KeyCode.K)) {
-			upForce = -400;
+			upForce = -1000;
 		} else {
 			upForce = 98.1f;
 		}
 	}
 
-	public float movementForwardForce = 500;
+	/*
+	 * MOVEMENT FORWARD
+	 */
+
+	public float movementForwardForce = 1000;
 	public float tiltAmount = 0;
 	public float tiltVelocity;
 
@@ -41,6 +54,10 @@ public class DroneMovement : MonoBehaviour {
 		}
 	}
 
+	/*
+	 * ROTATION
+	 */
+
 	public float wantedYRotation;
 	public float currentYRotation;
 	public float rotateAmountByKeys = 2.5f;
@@ -50,11 +67,24 @@ public class DroneMovement : MonoBehaviour {
 		if (Input.GetKey (KeyCode.J)) {
 			wantedYRotation -= rotateAmountByKeys;
 		}
-		if (Input.GetKey (KeyCode.K)) {
+		if (Input.GetKey (KeyCode.L)) {
 			wantedYRotation += rotateAmountByKeys;
 		}
 
 		currentYRotation = Mathf.SmoothDamp (currentYRotation, wantedYRotation, ref rotationYVelocity, 0.25f);
 
 	}
+
+	/*
+	 * FRICTION
+	 */
+
+	public Vector3 velocityToZero;
+
+	void ClampingSpeedValues() {
+		if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.2f && Mathf.Abs(Input.GetAxis("Horizontal")) > 0.2f) {
+			drone.velocity = Vector3.ClampMagnitude(drone.velocity, Mathf.Lerp(drone.velocity.magnitude, 10f), Time.deltaTime * 5f)
+		}
+	}
+
 }
