@@ -18,6 +18,7 @@ public class DroneMovement : MonoBehaviour {
 		MovementForward();
 		Rotation();
 		ClampingSpeedValues();
+		MovementLeftRight();
 
 		drone.AddRelativeForce(Vector3.up * upForce);
 		drone.rotation = Quaternion.Euler(
@@ -31,9 +32,9 @@ public class DroneMovement : MonoBehaviour {
 	public float upForce;
 	void MovementUpDown() {
 		if (Input.GetKey (KeyCode.I)) {
-			upForce = 1000;
+			upForce = 5000;
 		} else if (Input.GetKey (KeyCode.K)) {
-			upForce = -1000;
+			upForce = -5000;
 		} else {
 			upForce = 98.1f;
 		}
@@ -43,13 +44,13 @@ public class DroneMovement : MonoBehaviour {
 	 * MOVEMENT FORWARD
 	 */
 
-	public float movementForwardForce = 1000;
+	public float movementForwardForce = 0;
 	public float tiltAmount = 0;
 	public float tiltVelocity;
 
 	void MovementForward() {
 		if (Input.GetAxis ("Vertical") != 0) {
-			drone.AddRelativeForce(Vector3.forward * Input.GetAxis("Vertical") * movementForwardForce);
+			drone.AddRelativeForce(Vector3.forward * Input.GetAxis("Vertical") * movementForwardForce*10);
 			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20 * Input.GetAxis("Vertical"), ref tiltVelocity, 0.1f);
 		}
 	}
@@ -76,14 +77,35 @@ public class DroneMovement : MonoBehaviour {
 	}
 
 	/*
-	 * FRICTION
+	 * VELOCITY CAPING
 	 */
 
 	public Vector3 velocityToZero;
 
 	void ClampingSpeedValues() {
 		if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.2f && Mathf.Abs(Input.GetAxis("Horizontal")) > 0.2f) {
-			drone.velocity = Vector3.ClampMagnitude(drone.velocity, Mathf.Lerp(drone.velocity.magnitude, 10f), Time.deltaTime * 5f)
+			drone.velocity = Vector3.ClampMagnitude (drone.velocity, Mathf.Lerp (drone.velocity.magnitude, 10.0f, Time.deltaTime * 5f));
+		}
+
+//		if (Mathf.Abs (Input.GetAxis ("Vertical")) > 0.2f && Mathf.Abs (Input.GetAxis ("horizontal")) > 0.2f) {
+//			drone.velocity = Vector3.ClampMagnitude(drone.velocity, Mathf.Lerp(drone.velocity.magnitude, 10.0f, Time.deltaTime * 5f))
+//		}
+
+	}
+
+	/*
+	 * MOVEMENT LEFT & RIGHT
+	 */
+	public float sideMovementAmount = 500.0f;
+	public float sideTiltAmount;
+	public float sideTiltVelocity;
+
+	void MovementLeftRight() {
+		if (Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f) {
+			drone.AddRelativeForce (Vector3.right * Input.GetAxis ("horizontal") * sideMovementAmount);
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, 20.0f * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
+		} else {
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, 0, ref sideTiltAmount, 0.1f);
 		}
 	}
 
