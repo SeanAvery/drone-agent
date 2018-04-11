@@ -5,6 +5,8 @@ class QuadCopter():
     def __init__(self):
         self.position = (0, 0, 0)
         self.velocity = (0, 0, 0)
+        self.angle = (0, 0, ) # pitch, yaw, roll
+        self.angle_velocity = (0, 0, )
 
 if __name__ == '__main__':
     copter = QuadCopter()
