@@ -54,8 +54,13 @@ public class DroneMovements : MonoBehaviour {
 		}
 
 
+
 		if (Input.GetKey (KeyCode.I)) {
-			upForce = 5000;
+			upForce = 4000;
+
+			if (Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f) {
+				upForce = 5000;
+			}
 		} else if (Input.GetKey (KeyCode.K)) {
 			upForce = -3000;
 		} else {
@@ -74,14 +79,10 @@ public class DroneMovements : MonoBehaviour {
 	public float tiltVelocity;
 
 	void MovementForwardBack () {
-		if (Input.GetKey (KeyCode.W)) {
-			forwardForce = 5000;
-			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20.0f * Input.GetAxis ("Vertical"), ref tiltVelocity, 0.1f);
-		} else if (Input.GetKey (KeyCode.S)) {
-			forwardForce = -5000;
-			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20.0f * Input.GetAxis ("Vertical"), ref tiltVelocity, 0.1f);
-		} else {
-			forwardForce = 0;
+		if (Input.GetAxis ("Vertical") != 0) {
+			drone.AddRelativeForce (Vector3.forward * Input.GetAxis ("Vertical") * movementForwardSpeed);
+			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20 * Input.GetAxis ("Vertical"), ref tiltVelocity, 0.1f);
+
 		}
 	}
 
