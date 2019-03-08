@@ -125,12 +125,12 @@ public class DroneMovements : MonoBehaviour {
 	public float sideTiltVelocity;
 
 	void MovementLeftRight() {
-		if (Input.GetKey (KeyCode.A)) {
+		if (Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f) {
 			drone.AddRelativeForce (Vector3.right * Input.GetAxis ("Horizontal") * sideMovementAmount);
-			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, -20.0f * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
-		} else if (Input.GetKey (KeyCode.D)) {
-			drone.AddRelativeForce (Vector3.left * Input.GetAxis ("Horizontal") * sideMovementAmount2);
-			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, -20.0f * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, -20 * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
+		}
+		else {
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, 0, ref sideTiltVelocity, 0.1f);
 		}
 	}
 
