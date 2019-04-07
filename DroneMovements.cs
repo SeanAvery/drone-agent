@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DroneMovement : MonoBehaviour {
+public class DroneMovements : MonoBehaviour {
 	Rigidbody drone;
 
 	void Awake() {
@@ -15,12 +15,13 @@ public class DroneMovement : MonoBehaviour {
 
 	void FixedUpdate(){
 		MovementUpDown();
-		MovementForward();
+		MovementForwardBack();
 		Rotation();
 		ClampingSpeedValues();
 		MovementLeftRight();
 
 		drone.AddRelativeForce(Vector3.up * upForce);
+		drone.AddRelativeForce(Vector3.forward * forwardForce);
 		drone.rotation = Quaternion.Euler(
 			new Vector3(tiltAmount, currentYRotation, sideTiltAmount));
 	}
@@ -31,12 +32,39 @@ public class DroneMovement : MonoBehaviour {
 
 	public float upForce;
 	void MovementUpDown() {
+
+		// if the drone already has tilt, make adjustements
+		if ((Mathf.Abs (Input.GetAxis ("Vertical")) > 0.2f || Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f)) {
+			if (Input.GetKey (KeyCode.I) || Input.GetKey (KeyCode.K)) {
+				// do nothing
+			}
+
+			// if forward/back and left/right are not being pressed
+			if (!Input.GetKey(KeyCode.I) || !Input.GetKey(KeyCode.K) && !Input.GetKey(KeyCode.J) && !Input.GetKey(KeyCode.L)) {
+				drone.velocity = new Vector3 (drone.velocity.x, Mathf.Lerp(drone.velocity.y, 0, Time.deltaTime * 5), drone.velocity.z);
+				upForce = 2810;
+			}
+
+			// if moving left/right
+			if (!Input.GetKey(KeyCode.I) && !Input.GetKey(KeyCode.K) && Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.L)) {
+				drone.velocity = new Vector3 (drone.velocity.x, Mathf.Lerp(drone.velocity.y, 0, Time.deltaTime * 5), drone.velocity.z);
+				upForce = 1100;
+			}
+
+		}
+
+
+
 		if (Input.GetKey (KeyCode.I)) {
-			upForce = 5000;
+			upForce = 4000;
+
+			if (Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f) {
+				upForce = 5000;
+			}
 		} else if (Input.GetKey (KeyCode.K)) {
-			upForce = -5000;
+			upForce = -3000;
 		} else {
-			upForce = 98.1f;
+			upForce = 980.1f;
 		}
 	}
 
@@ -44,14 +72,17 @@ public class DroneMovement : MonoBehaviour {
 	 * MOVEMENT FORWARD
 	 */
 
-	public float movementForwardForce = 0;
+	public float forwardForce;
+	public float movementForwardSpeed = 5000.0f;
+	public float movementBackwardSpeed = -5000.0f;
 	public float tiltAmount = 0;
 	public float tiltVelocity;
 
-	void MovementForward() {
+	void MovementForwardBack () {
 		if (Input.GetAxis ("Vertical") != 0) {
-			drone.AddRelativeForce(Vector3.forward * Input.GetAxis("Vertical") * movementForwardForce*10);
-			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20.0f * Input.GetAxis("Vertical"), ref tiltVelocity, 0.1f);
+			drone.AddRelativeForce (Vector3.forward * Input.GetAxis ("Vertical") * movementForwardSpeed);
+			tiltAmount = Mathf.SmoothDamp (tiltAmount, 20 * Input.GetAxis ("Vertical"), ref tiltVelocity, 0.1f);
+
 		}
 	}
 
@@ -80,27 +111,26 @@ public class DroneMovement : MonoBehaviour {
 	 * VELOCITY CAPING
 	 */
 
-	public Vector3 velocityToZero;
-
+//	public Vector3 velocityToZero;
 	void ClampingSpeedValues() {
-		if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.2f && Mathf.Abs(Input.GetAxis("Horizontal")) > 0.2f) {
-			drone.velocity = Vector3.ClampMagnitude (drone.velocity, Mathf.Lerp (drone.velocity.magnitude, 10.0f, Time.deltaTime * 5f));
-		}
+		drone.velocity = Vector3.ClampMagnitude (drone.velocity, Mathf.Lerp (drone.velocity.magnitude, 10.0f, Time.deltaTime * 5f));
 	}
 
 	/*
 	 * MOVEMENT LEFT & RIGHT
 	 */
 	public float sideMovementAmount = 2500.0f;
+	public float sideMovementAmount2 = -2500.0f;
 	public float sideTiltAmount;
 	public float sideTiltVelocity;
 
 	void MovementLeftRight() {
 		if (Mathf.Abs (Input.GetAxis ("Horizontal")) > 0.2f) {
 			drone.AddRelativeForce (Vector3.right * Input.GetAxis ("Horizontal") * sideMovementAmount);
-			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, -20.0f * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
-		} else {
-			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, 0, ref sideTiltAmount, 0.1f);
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, -20 * Input.GetAxis ("Horizontal"), ref sideTiltVelocity, 0.1f);
+		}
+		else {
+			sideTiltAmount = Mathf.SmoothDamp (sideTiltAmount, 0, ref sideTiltVelocity, 0.1f);
 		}
 	}
 
